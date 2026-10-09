@@ -6,7 +6,7 @@
  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
  let observer;
  function sync(){
-   const mode=modes.includes(window.PORTFOLIO_DATA?.motion)?window.PORTFOLIO_DATA.motion:'subtle';
+   const value=window.Studio?.get()?.motion ?? window.PORTFOLIO_DATA?.motion;const mode=modes.includes(value)?value:'subtle';
    document.body.dataset.motion=mode;
    if(selector)selector.value=mode;
    refresh();

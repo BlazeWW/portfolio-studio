@@ -1,3 +1,28 @@
+# Portfolio Studio v5 — Layout and Editor Reliability
+
+## Fixes and improvements
+- Fixed Experience & Education (résumé) section alignment by removing the flex layout applied to the entire portfolio. Section order now moves actual DOM nodes instead of styling flex order. Full-bleed sections remain full width and `.wrap` sections remain centred at the same maximum width.
+- Restored a missing `clickEditMode` button referenced by Studio scripts. Its absence caused a runtime error that stopped subsequent tool initialization, including versions, publishing preview and draft restoration.
+- Improved résumé editor spacing, card controls, and mobile behaviour.
+- Added one-click **View résumé**, **View projects**, and **Show section** shortcuts in Studio tools.
+- Retains visual Experience/Education editing, existing themes, backups, exports, and draft storage key.
+
+## Usage
+Serve the folder through an HTTP static server or GitHub Pages, then use **Studio tools**. The editor runs entirely in the browser. Export backups before replacing a production deployment. For ZIP export, HTTP hosting is required to fetch the static assets.
+
+## Checks
+JavaScript syntax, HTML element IDs, all local script/CSS references, ZIP integrity and known initialization element references are checked at packaging time. Manual browser verification is still advised before live deployment.
+
+# Portfolio Studio v3 — Visual Editing Pass
+
+This version removes all raw JSON editing from the content editor. Use visual fields to add, edit, reorder, and remove experience and education entries. Project editors now have individual gallery image fields, multi-image uploads, reordering, duplication, and multiline description/process fields. The data.js and JSON formats remain available as export/import formats (not manual authoring interfaces).
+
+Serve this directory using a local HTTP server (for example `python3 -m http.server 8000`) and open `http://localhost:8000/`. Browser `file://` mode is not suitable for full-site ZIP exporting. Existing browser drafts from v2 use the same local storage key.
+
+**Important:** Hosting on GitHub Pages remains static. Draft changes stay local until the generated public website is uploaded. GitHub OAuth publishing and fully general drag-and-drop component editing are not included in this build.
+
+---
+
 # Portfolio Studio — free GitHub Pages portfolio
 
 A responsive, static portfolio website for people who don't code. Includes five designs, an in-browser editor, selected projects, image galleries, skills, experience, education, CV downloads, and contact links. No Node.js, database, or build process needed.
@@ -93,3 +118,35 @@ When deploying, include **`course-themes.css`** next to `style.css` in the repos
 ## Animations and emphasis
 
 `motion.css` and `motion.js` add scroll-triggered reveals, hero entrance sequences, interactive card focus/hover effects, a visible featured-project label, skill accents, and accessible keyboard focus states. The editor toolbar offers **Subtle**, **Expressive**, and **Off** motion settings; these are stored in the exported `data.js` as `motion`, so the public site respects the creator's setting. System `prefers-reduced-motion` always disables animation regardless of the selection. Layout-specific polish adapts to all 22 course themes plus five originals. Re-run deployment with both motion files in the repository root.
+
+## Portfolio Studio v2 builder additions
+
+Open the builder through a local HTTP server (for example `python3 -m http.server 8080`) and visit `http://localhost:8080`. Choose **Studio tools** to open the local-first workspace.
+
+- **Drafts:** automatically saved in this browser's localStorage. Save/export a backup JSON separately to protect against clearing browser data or storage quota limits.
+- **Undo/Redo:** up to 60 captured edits. Redo history is cleared after further editing.
+- **Visual content:** Experience and Education have simple repeatable item editors (raw JSON remains under Advanced JSON editor).
+- **Sections:** reorder the five existing sections and control their visibility.
+- **Visual settings:** accent colour, corner radius and desktop/tablet/mobile preview width.
+- **Media:** attach portrait JPEG/PNG/WebP/GIF/SVG and PDF CV documents up to 8MB each. Uploaded files are embedded into the generated data.js as data URLs; for best performance optimize large images first.
+- **Publishing:** click **Download full website ZIP** to package the visitor-facing static website, themes, sample images, CSS, JavaScript, and data. Unzip and upload contents to your static host or GitHub Pages. No Node runtime or server database is needed.
+- **GitHub:** use the link to the official GitHub Pages guide. Automatic OAuth-based publishing requires a separate authenticated integration and is not included.
+
+Important: Static exported pages use a separate `public.js` renderer, not `app.js` or `studio.js`, and do not save or expose drafts. External URLs used by starter content (e.g. remote example photos, Google Fonts) still require network access. The site builder requires HTTP rather than direct `file://` loading for ZIP export because the browser must load bundled static assets.
+
+
+## v4 enhancements
+
+- **Click to edit:** Studio tools → Click to edit. Click any hero/profile/contact field to open its form; click a project to expand its project editor, or another section to open the relevant editor. Switch the mode off to follow links normally.
+- **Quick-add content:** Add general projects, architecture case studies, experience, education and skill entries using templates that retain the existing data format.
+- **Named revision checkpoints:** Save, restore and remove up to 12 locally stored named revisions. They live in the current browser; download JSON backups for portability.
+- **Published preview:** An isolated browser frame uses the actual visitor-only rendering script without builder controls, before exporting. Preview at desktop, tablet and mobile widths.
+
+**Limits:** This is a section-based builder, not a full arbitrary-layout drag/drop canvas. The click-to-edit mode navigates to structured fields instead of directly modifying public HTML. Publishing still requires downloading and uploading the static output; authenticated GitHub publishing is not bundled. Test in a browser served over HTTP, not from file://.
+
+
+## v4.1 hotfix
+
+Corrected script ordering: the v4 workspace JavaScript ran before the workspace DOM existed, preventing Studio tools from initializing and leaving the résumé form empty. Studio scripts now load at the end of the document after the workspace and publication-preview elements.
+
+Experience & Education has a permanently open editor section with individual work experience and education forms, add/remove/reorder controls and new shortcuts in Studio tools. Entries render in the public Résumé section.

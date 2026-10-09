@@ -1,0 +1,34 @@
+.studio-tools{position:fixed;z-index:30;right:0;top:0;bottom:0;width:min(350px,94vw);overflow:auto;background:#f8faf9;color:#202a28;box-shadow:-10px 0 50px #0003;padding:20px;font:14px/1.5 'DM Sans',sans-serif}.studio-tools[hidden]{display:none}.studio-tools h3{font-size:14px;margin:24px 0 8px}.tools-heading{display:flex;justify-content:space-between;align-items:center;font-size:18px}.studio-tools button{background:white;border:1px solid #cad5ce;border-radius:9px;padding:7px 11px;cursor:pointer;color:#1d3029}.tools-actions{display:flex;flex-wrap:wrap;gap:7px}.tools-actions button:disabled{opacity:.4}.tools-primary{display:block;width:100%;background:#174d39!important;color:white!important;padding:12px!important;margin:12px 0}.studio-tools label{display:block;font-weight:600;font-size:12px;margin:10px 0}.studio-tools input[type=file],.studio-tools input[type=range],.studio-tools input[type=color],.studio-tools textarea,.studio-tools select{display:block;width:100%;margin:4px 0;padding:7px}.studio-tools select{background:white;color:#202a28}.tools-note{font-size:11px;color:#596c62}.section-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #dce7e1}.section-row span{flex:1}.section-row button{padding:3px 7px}.resume-edit{border:1px solid #ddd;border-radius:8px;padding:9px;margin:9px 0}.resume-edit label{display:block;margin:8px 0}.resume-edit textarea{width:100%}.legacy-json{margin:10px 0}.studio-bar{z-index:10;position:relative}body[data-device="tablet"] main,body[data-device="mobile"] main{margin:auto;box-shadow:0 0 0 100vmax #dce3df;clip-path:inset(0 -100vmax);background:var(--bg)}body[data-device="tablet"] main{max-width:768px}body[data-device="mobile"] main{max-width:390px}body[data-device="mobile"] main .wrap{padding-left:18px;padding-right:18px}body[data-device="mobile"] .hero,body[data-device="mobile"] .about-grid,body[data-device="mobile"] .resume-grid{grid-template-columns:1fr}body[data-device="mobile"] .project-grid{grid-template-columns:1fr}body[data-device="mobile"] .project:first-child{grid-column:span 1;display:block}main section[hidden]{display:none!important}#draftState{font-size:12px;color:#287047}
+
+/* v3 structured content editors */
+.project-edit-details{border:1px solid #cbd7d0;border-radius:12px;padding:12px;margin:12px 0;background:#fff}.project-edit-details>summary{cursor:pointer;font-weight:700;padding:5px}.project-edit-details textarea{min-height:84px;resize:vertical}.gallery-editor{border:1px solid #d7e2dc;border-radius:9px;padding:12px;margin:12px 0}.gallery-editor legend{font-weight:700}.gallery-edit-item{display:flex;gap:8px;margin:8px 0}.gallery-edit-item input{flex:1;min-width:0}.project-edit-actions,.resume-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.resume-edit legend{font-weight:700;padding:0 5px}.resume-edit input,.resume-edit textarea{display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cbd7d0;border-radius:7px}.resume-edit textarea{min-height:82px}.editor-scroll .edit-project{padding:0;border:0;background:transparent}
+
+/* v4 direct selection and publish preview */
+.click-edit-enabled main section{cursor:crosshair}.click-edit-enabled main section:hover{outline:2px dashed var(--accent,#4f8467);outline-offset:-4px}.click-edit-enabled main #heroName:hover,.click-edit-enabled main #heroRole:hover,.click-edit-enabled main #tagline:hover,.click-edit-enabled main .project:hover{outline:3px solid #27aa8b;outline-offset:4px}.direct-edit-target{outline:3px solid #27aa8b!important;box-shadow:0 0 0 4px #27aa8b33!important}.publication-dialog{width:min(1200px,96vw);height:min(900px,94vh);max-width:none;max-height:none;border:0;border-radius:14px;padding:12px;background:#edf2ef;color:#253a30}.publication-dialog::backdrop{background:#0b1914ba}.preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}.preview-toolbar select,.preview-toolbar button{padding:8px;background:white;border:1px solid #a9bdb0;border-radius:7px;color:#182f25}.publication-dialog iframe{display:block;margin:auto;width:100%;height:calc(100% - 55px);border:1px solid #c1d1c7;background:white;max-width:100%;transition:width .2s}.studio-tools button:focus-visible{outline:3px solid #409e7d}
+/* v4.1: prominent résumé management */
+.resume-shortcuts{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 16px}
+#resumeEditorPanel{border:1px solid #cbd7d0;border-radius:12px;padding:14px;margin:14px 0}
+#resumeEditorPanel>summary{font-size:1.05rem;font-weight:700;cursor:pointer}
+#visualResume h4{margin:22px 0 8px}
+#visualResume>button{margin:8px 0 16px}
+#studioTools .tools-actions{margin:8px 0 14px}
+
+/* v5: Align all full-width sections with the same content grid.
+   Previously applying flex to main made .wrap children shrink to intrinsic width. */
+#main { display:block !important; width:100%; min-width:0; }
+#main > section.wrap { width:100%; max-width:1190px; box-sizing:border-box; margin-left:auto; margin-right:auto; }
+#main > section:not(.wrap) { width:100%; min-width:0; box-sizing:border-box; }
+#main .resume-grid { min-width:0; }
+#main .resume-grid > div { min-width:0; overflow-wrap:anywhere; }
+#main #resume .section-heading { width:100%; }
+#main #resume .resume-grid { width:100%; }
+#main #resume[hidden] { display:none !important; }
+.studio-tools .tools-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.studio-tools .tools-actions button { min-height:34px; }
+#visualResume .resume-edit {padding:15px; background:#f9fbfa;border:1px solid #d2ded7;margin:13px 0;}
+#visualResume .resume-edit legend {padding:0 7px;}
+#visualResume .resume-edit .resume-actions button:last-child {color:#923c4b;}
+#resumeEditorPanel .resume-shortcuts button {flex:1;min-width:145px;}
+#sectionList .section-row span {font-weight:500;}
+#sectionList .section-row button { min-width:30px; }
+@media(max-width:560px){ #main > section.wrap {padding-left:22px;padding-right:22px;} #resume .section-heading .button {margin-top:16px;} #resume .resume-grid {grid-template-columns:minmax(0,1fr);} }
