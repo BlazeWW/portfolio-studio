@@ -1,0 +1,2 @@
+This is a placeholder CV file.
+Replace it with assets/cv.pdf and change the CV path in the portfolio editor to assets/cv.pdf.
