@@ -29,7 +29,9 @@ document.body.dataset.theme=data.theme||'aurora';document.body.dataset.layout=co
 if(data.accent)document.body.style.setProperty('--accent',data.accent);
 if(data.cornerRadius!==undefined)document.body.style.setProperty('--radius',String(data.cornerRadius)+'px');
 const order=data.sectionOrder||['home','work','about','resume','contact'];
-const main=$('main');main.style.display='flex';main.style.flexDirection='column';
-for(const id of ['home','work','about','resume','contact']){const section=$(id);section.style.order=String(order.indexOf(id)+1);section.hidden=(data.hiddenSections||[]).includes(id)}
+const main=$('main');
+const valid=['home','work','about','resume','contact'];
+const ordered=[...order.filter(id=>valid.includes(id)),...valid.filter(id=>!order.includes(id))];
+for(const id of ordered){const section=$(id);if(section){section.hidden=(data.hiddenSections||[]).includes(id);main.appendChild(section)}}
 draw();
 })();

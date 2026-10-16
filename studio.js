@@ -48,10 +48,55 @@ $('jumpProjects').onclick=()=>{$('studioTools').hidden=true;$('work').scrollInto
 const crcTable=Uint32Array.from({length:256},(_,n)=>{let c=n;for(let i=0;i<8;i++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;return c>>>0});
 function crc32(buf){let c=0xffffffff;for(const byte of buf)c=crcTable[(c^byte)&255]^(c>>>8);return(c^0xffffffff)>>>0}
 function zip(files){const local=[],central=[];let offset=0;for(const [name,source] of files){const filename=bytes(name),payload=typeof source==='string'?bytes(source):source,crc=crc32(payload);const header=new Uint8Array(30+filename.length),v=new DataView(header.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x800,true);v.setUint32(14,crc,true);v.setUint32(18,payload.length,true);v.setUint32(22,payload.length,true);v.setUint16(26,filename.length,true);header.set(filename,30);local.push(header,payload);const cd=new Uint8Array(46+filename.length),cv=new DataView(cd.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0x800,true);cv.setUint32(16,crc,true);cv.setUint32(20,payload.length,true);cv.setUint32(24,payload.length,true);cv.setUint16(28,filename.length,true);cv.setUint32(42,offset,true);cd.set(filename,46);central.push(cd);offset+=header.length+payload.length}const cdLength=central.reduce((s,x)=>s+x.length,0),end=new Uint8Array(22),ev=new DataView(end.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cdLength,true);ev.setUint32(16,offset,true);return new Blob([...local,...central,end],{type:'application/zip'})}
-const staticPaths=['style.css','course-themes.css','motion.css','public.js','motion.js','.nojekyll','assets/architecture-model.svg','assets/architecture-civic.svg','assets/architecture-profile.svg','assets/portrait.svg','assets/architecture-house.svg','assets/cv-placeholder.txt','assets/architecture-plan.svg','assets/project.svg'];
-function xmlSafe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function exportZip(){const btn=$('exportWebsite');btn.disabled=true;btn.textContent='Preparing ZIP…';try{const d=S.get();const files=[];for(const path of staticPaths){const resp=await fetch(path);if(!resp.ok)throw Error('Cannot read '+path+' (serve this builder over HTTP rather than file://)');files.push([path,new Uint8Array(await resp.arrayBuffer())])}
-const doc=document.cloneNode(true);doc.querySelector('.studio-bar')?.remove();doc.querySelector('#editor')?.remove();doc.querySelector('#studioTools')?.remove();doc.querySelector('#publishPreviewDialog')?.remove();doc.querySelectorAll('script').forEach(el=>el.remove());doc.querySelector('link[rel="stylesheet"][href="studio.css"]')?.remove();const meta=doc.querySelector('meta[name="description"]');meta?.setAttribute('content',(d.seoDescription||d.tagline||'Portfolio').slice(0,260));const og=doc.createElement('meta');og.setAttribute('property','og:title');og.setAttribute('content',d.name+' — '+d.role);doc.head.append(og);const ogd=doc.createElement('meta');ogd.setAttribute('property','og:description');ogd.setAttribute('content',(d.seoDescription||d.tagline||'').slice(0,260));doc.head.append(ogd);doc.body.removeAttribute('data-device');const script=doc.createElement('script');script.setAttribute('src','data.js');doc.body.append(script);const runtime=doc.createElement('script');runtime.setAttribute('src','public.js');doc.body.append(runtime);const motion=doc.createElement('script');motion.setAttribute('src','motion.js');doc.body.append(motion);doc.head.querySelector('title').textContent=d.name+' — Portfolio';files.push(['index.html','<!doctype html>\n'+doc.documentElement.outerHTML]);files.push(['data.js','window.PORTFOLIO_DATA = '+JSON.stringify(d,null,2)+';\n']);files.push(['README.txt','Upload the contents of this ZIP to a static hosting service or GitHub Pages. No server is required.\n']);const fileName=(d.name||'portfolio').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'portfolio';download(zip(files),fileName+'-website.zip');$('draftState').textContent='✓ Website ZIP exported'}catch(err){alert('Export failed: '+err.message)}finally{btn.disabled=false;btn.textContent='↓ Download full website ZIP'}}
+const requiredPaths=['style.css','course-themes.css','motion.css','courses.js','public.js','motion.js','print.css','print.js'];
+const defaultAssets=['assets/architecture-model.svg','assets/architecture-civic.svg','assets/architecture-profile.svg','assets/portrait.svg','assets/architecture-house.svg','assets/cv-placeholder.txt','assets/architecture-plan.svg','assets/project.svg'];
+function localAsset(value){
+ if(typeof value!=='string'||!value.trim()||/^(?:data:|blob:|https?:|mailto:|tel:|#|\/\/)/i.test(value.trim()))return null;
+ try{
+  const url=new URL(value,document.baseURI),root=new URL('.',document.baseURI);
+  if(url.origin!==root.origin||!url.pathname.startsWith(root.pathname)||url.search||url.hash)return null;
+  const path=decodeURIComponent(url.pathname.slice(root.pathname.length));
+  if(!path||path.split('/').some(part=>part==='..'||part==='.')||path.startsWith('/'))return null;
+  return path;
+ }catch{return null}
+}
+async function fetchAsset(path,required){
+ let response;
+ try{response=await fetch(new URL(path,document.baseURI),{cache:'no-store'});}catch(error){
+  throw Error(required?'Cannot load required file "'+path+'". Run the builder through an HTTP(S) server and confirm the file is deployed. '+error.message:'Optional asset unavailable: '+path);
+ }
+ if(!response.ok)throw Error((required?'Required file missing: ':'Optional asset unavailable: ')+path+' (HTTP '+response.status+')');
+ return new Uint8Array(await response.arrayBuffer());
+}
+function cleanProductionDoc(d){const doc=document.cloneNode(true);doc.querySelector('.studio-bar')?.remove();doc.querySelector('#editor')?.remove();doc.querySelector('#studioTools')?.remove();doc.querySelector('#publishPreviewDialog')?.remove();doc.querySelectorAll('script').forEach(el=>el.remove());doc.querySelector('link[href="studio.css"]')?.remove();doc.body.removeAttribute('data-device');doc.body.classList.remove('click-edit-enabled');doc.querySelector('meta[name="description"]')?.setAttribute('content',(d.seoDescription||d.tagline||'Portfolio').slice(0,260));doc.querySelector('title').textContent=(d.name||'Portfolio')+' — Portfolio';return doc}
+async function exportZip(){
+ const btn=$('exportWebsite'),draft=$('draftState');btn.disabled=true;
+ try{
+  if(location.protocol==='file:')throw Error('This browser blocks fetching local files from file://. Open Portfolio Studio through http://localhost or an HTTPS-hosted page instead.');
+  const d=S.get(),files=[],warnings=[],bundled=new Set();
+  const add=(path,content)=>{if(!bundled.has(path)){files.push([path,content]);bundled.add(path)}};
+  for(const path of requiredPaths){btn.textContent='Loading '+path+'…';add(path,await fetchAsset(path,true))}
+  add('.nojekyll',new Uint8Array()); // GitHub Pages marker is generated, not fetched.
+  const images=[d.avatar,d.resume,...(d.projects||[]).flatMap(p=>[p.image,...(Array.isArray(p.gallery)?p.gallery:[])])];
+  const optional=[...new Set([...defaultAssets,...images.map(localAsset).filter(Boolean)])].filter(path=>!bundled.has(path));
+  for(const path of optional){
+   btn.textContent='Packaging '+path+'…';
+   try{add(path,await fetchAsset(path,false))}catch(error){warnings.push(error.message)}
+  }
+  const doc=cleanProductionDoc(d);
+  for(const [key,content] of [['og:title',(d.name||'Portfolio')+' — '+(d.role||'Portfolio')],['og:description',(d.seoDescription||d.tagline||'').slice(0,260)]]){const og=doc.createElement('meta');og.setAttribute('property',key);og.setAttribute('content',content);doc.head.append(og)}
+  for(const path of ['data.js','courses.js','public.js','motion.js','print.js']){const script=doc.createElement('script');script.src=path;doc.body.append(script)}
+  add('index.html','<!doctype html>\n'+doc.documentElement.outerHTML);
+  const serialized=JSON.stringify(d,null,2).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+  add('data.js','window.PORTFOLIO_DATA = '+serialized+';\n');
+  add('README.txt','Portfolio Studio static website. Upload all extracted files to your hosting web root.\n'+(warnings.length?'\nUnavailable optional assets:\n'+warnings.join('\n')+'\n':''));
+  btn.textContent='Creating ZIP…';
+  const fileName=(d.name||'portfolio').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'portfolio';
+  download(zip(files),fileName+'-website.zip');
+  draft.textContent=warnings.length?'✓ ZIP downloaded; '+warnings.length+' optional asset(s) could not be included. See README.txt inside the ZIP.':'✓ Website ZIP downloaded';
+ }catch(error){draft.textContent='⚠ ZIP export failed: '+error.message;alert('Export failed: '+error.message)}
+ finally{btn.disabled=false;btn.textContent='↓ Download full website ZIP'}
+}
 $('exportWebsite').onclick=exportZip;
 $('exportBackup').onclick=()=>download(new Blob([JSON.stringify(S.get(),null,2)],{type:'application/json'}),'portfolio-backup.json');
 $('githubHelp').onclick=()=>window.open('https://docs.github.com/en/pages/quickstart','_blank','noopener,noreferrer');
@@ -74,7 +119,6 @@ $('saveVersion').onclick=()=>{const label=prompt('Name this revision (for exampl
 $('restoreVersion').onclick=()=>{const v=readVersions().find(v=>v.id===$('versionList').value);if(!v)return;if(confirm('Restore '+v.label+'? Your current draft will be replaced.')){S.set(v.data);$('draftState').textContent='✓ Revision restored'}};
 $('deleteVersion').onclick=()=>{const id=$('versionList').value;if(!id)return;if(confirm('Delete this saved revision?'))writeVersions(readVersions().filter(v=>v.id!==id))};renderVersions();
 // Preview the visitor-only layout by cloning the public markup and loading only its renderer.
-function cleanProductionDoc(d){const doc=document.cloneNode(true);doc.querySelector('.studio-bar')?.remove();doc.querySelector('#editor')?.remove();doc.querySelector('#studioTools')?.remove();doc.querySelector('#publishPreviewDialog')?.remove();doc.querySelectorAll('script').forEach(el=>el.remove());doc.querySelector('link[href="studio.css"]')?.remove();doc.body.removeAttribute('data-device');doc.body.classList.remove('click-edit-enabled');doc.querySelector('meta[name="description"]')?.setAttribute('content',(d.seoDescription||d.tagline||'Portfolio').slice(0,260));doc.querySelector('title').textContent=(d.name||'Portfolio')+' — Portfolio';return doc}
 $('publicationPreview').onclick=()=>{const d=S.get(),doc=cleanProductionDoc(d),base=doc.createElement('base');base.href=location.href;doc.head.prepend(base);const script=doc.createElement('script');script.textContent='window.PORTFOLIO_DATA='+JSON.stringify(d).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')+';';doc.body.append(script);const renderer=doc.createElement('script');renderer.src=new URL('public.js',location.href).href;doc.body.append(renderer);const motion=doc.createElement('script');motion.src=new URL('motion.js',location.href).href;doc.body.append(motion);$('publicationFrame').srcdoc='<!doctype html>\n'+doc.documentElement.outerHTML;$('publishPreviewDialog').showModal()};
 $('closePublishPreview').onclick=()=>{$('publishPreviewDialog').close();$('publicationFrame').srcdoc=''};
 $('publishPreviewDevice').onchange=e=>$('publicationFrame').style.width=e.target.value;

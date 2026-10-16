@@ -12,3 +12,6 @@ body[data-theme="architecture"]{--bg:#f1eee6;--surface:#faf9f5;--ink:#22292a;--m
 .studio-actions #course{max-width:235px;min-width:160px}.studio-actions #theme{max-width:160px}
 @media(max-width:1050px){.studio-bar{align-items:flex-start;flex-direction:column}.studio-actions{width:100%;flex-wrap:wrap}.studio-actions #course{flex:1;max-width:360px}}
 @media(max-width:560px){.studio-actions #course{width:100%;max-width:none;flex-basis:100%}.studio-actions #loadCourse{width:auto}.studio-tag{display:none}}
+
+/* Print / PDF control on both builder and exported website */
+.print-button{border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--ink);padding:9px 14px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}.print-button:hover{border-color:var(--accent)}@media(max-width:560px){.site-header{flex-wrap:wrap;gap:10px}.print-button{padding:7px 10px;font-size:11px}}
